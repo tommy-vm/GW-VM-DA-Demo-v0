@@ -1,0 +1,2 @@
+-- Optional seed helper (do not run automatically).
+-- Use this file to add demo data if tables are empty.
