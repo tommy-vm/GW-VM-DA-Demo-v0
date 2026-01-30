@@ -10,7 +10,7 @@ export default function Topbar() {
         </h1>
       </div>
       <div className="rounded-full border border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-300">
-        Live from Neon Postgres
+        Demo Admin Dashboard
       </div>
     </header>
   );

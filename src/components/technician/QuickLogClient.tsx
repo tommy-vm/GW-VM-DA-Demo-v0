@@ -249,7 +249,8 @@ function CompactRow({
 }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const status = task.status?.toUpperCase() ?? "NOT_STARTED";
-  const isBlocked = status === "BLOCKED";
+  const isShortage = (task.shortageParts ?? []).length > 0;
+  const isBlocked = status === "BLOCKED" || isShortage;
   const nextAction =
     status === "NOT_STARTED"
       ? { label: "Start", event: "START" }
@@ -279,13 +280,23 @@ function CompactRow({
             BLOCKED: {task.blockReason}
           </div>
         ) : null}
+        {isShortage ? (
+          <div className="mt-2 text-sm font-semibold text-rose-100">
+            BLOCKED: awaiting parts/material —{" "}
+            {task.shortageParts?.join(", ")}
+          </div>
+        ) : null}
       </div>
       <div className="flex items-center gap-3">
-        <StatusBadge label={task.status ?? "UNKNOWN"} tone={isBlocked ? "critical" : "info"} />
+        <StatusBadge
+          label={isBlocked ? "BLOCKED" : task.status ?? "UNKNOWN"}
+          tone={isBlocked ? "critical" : "info"}
+        />
         <button
           type="button"
           onClick={() => onNextAction(nextAction.event)}
-          className="h-12 rounded-xl bg-brand-600 px-5 text-base font-semibold text-white"
+          disabled={isShortage && nextAction.event !== "UNBLOCK"}
+          className="h-12 rounded-xl bg-brand-600 px-5 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           {nextAction.label}
         </button>

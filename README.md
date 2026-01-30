@@ -28,6 +28,7 @@ Production-quality admin dashboard demo for Gunther Werks bespoke restomod opera
 - `/inventory`
 - `/work-orders`
 
+
 ## DB Scripts
 - `/db/002_seed.sql` optional seed helper (do not auto-run)
 - `/db/003_verify.sql` demo story verification queries

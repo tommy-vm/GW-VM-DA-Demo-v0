@@ -13,34 +13,37 @@ const templates: InstructionTemplate[] = [
   {
     station: "Teardown",
     taskTitle: "Donor Intake & VIN / Condition Baseline",
-    objective: "Donor vehicle 상태를 “복원 가능한 수준의 기준 데이터”로 고정.",
-    prereqs: "Donor 입고 완료, 작업공간 확보",
-    inputs: "VIN scanner/카메라/태그 프린터/기본 진단툴",
+    objective:
+      "Lock baseline data so the donor vehicle condition is documented for rebuild quality.",
+    prereqs: "Donor check-in complete, workspace prepared",
+    inputs: "VIN scanner / camera / tag printer / basic diagnostic tools",
     steps: [
-      "VIN 확인 및 사진 기록(대시/도어/엔진룸)",
-      "엔진/미션 번호, ECU 라벨 촬영",
-      "오도미터/계기판 상태 촬영",
-      "하부 부식/충격 흔적 360° 촬영",
-      "“Reuse / Rebuild / Scrap” 1차 분류 기준 체크",
-      "Donor Buildbook 생성(디지털) + QR 라벨 출력"
+      "Verify VIN and capture photos (dash/door/engine bay)",
+      "Photograph engine/transmission numbers and ECU labels",
+      "Capture odometer and instrument cluster condition",
+      "Capture 360° underbody corrosion/impact evidence",
+      "Check initial “Reuse / Rebuild / Scrap” classification",
+      "Create digital donor buildbook + print QR labels"
     ],
-    qualityGates: ["VIN/serial 증빙 사진 10장 이상", "Baseline report 생성됨"],
-    logOnCompletion: ["Photos", "Notes(이상 징후)"]
+    qualityGates: ["10+ VIN/serial evidence photos", "Baseline report created"],
+    logOnCompletion: ["Photos", "Notes (anomalies)"]
   },
   {
     station: "Teardown",
     taskTitle: "Donor Parts Cataloging (nuts & bolts level)",
-    objective: "분해되는 모든 파츠를 추적 가능한 SKU/서브SKU로 카탈로그화",
-    inputs: "부품 트레이/라벨/저울(볼트류)/캘리퍼스/세척 전용박스",
+    objective:
+      "Catalog every disassembled part as trackable SKU/sub-SKU entries.",
+    inputs:
+      "Part trays / labels / scale (fasteners) / calipers / wash boxes",
     steps: [
-      "Sub-assembly 단위로 분해 (ex: front suspension)",
-      "각 트레이에 “donor build code + sub-assembly + date” 라벨",
-      "Fasteners(볼트/너트/와셔)는 봉투 단위로 분류 후 수량 기록",
-      "재사용 후보 파츠는 치수/마모 상태 기록",
-      "리빌드 대상은 “Rebuild required” 태그 부착",
-      "Scrap은 폐기 사유 기록"
+      "Disassemble by sub-assembly (e.g., front suspension)",
+      "Label each tray with “donor build code + sub-assembly + date”",
+      "Bag fasteners and record counts per bag",
+      "Record dimensions/wear for reuse candidates",
+      "Tag rebuild candidates with “Rebuild required”",
+      "Record scrap reason for discarded parts"
     ],
-    qualityGates: ["트레이/봉투 라벨 누락 0", "fastener count 기록 필수"],
+    qualityGates: ["Zero missing tray/bag labels", "Fastener counts recorded"],
     logOnCompletion: [
       "Parts count",
       "Measurements (optional)",
@@ -51,75 +54,80 @@ const templates: InstructionTemplate[] = [
     station: "Powertrain",
     taskTitle: "Engine Rebuild Coordination (Vendor + internal workflow)",
     objective:
-      "엔진 리빌드가 빌드 타임라인의 병목이 되지 않게 “리드타임/부품/의사결정”을 고정",
-    prereqs: "donor engine teardown 완료, rebuild scope 합의",
-    inputs: "bearing kit / seals / machining vendor info / torque spec sheet",
+      "Lock lead time, parts, and decisions so engine rebuild is not the build bottleneck.",
+    prereqs: "Donor engine teardown complete, rebuild scope agreed",
+    inputs:
+      "bearing kit / seals / machining vendor info / torque spec sheet",
     steps: [
-      "Rebuild scope 확정(Stock / performance / displacement)",
-      "Required kit 목록 확정(bearing/seal/gasket)",
-      "Machining vendor 슬롯 예약/납기 확인",
-      "Crank/case 측정치 기록(필수 항목만)",
-      "Missing parts 발생 시 즉시 Block 사유 = “Awaiting parts/material”",
-      "ETA 업데이트(“Expected back on” 날짜)"
+      "Confirm rebuild scope (stock / performance / displacement)",
+      "Confirm required kit list (bearing/seal/gasket)",
+      "Reserve machining vendor slot and confirm due date",
+      "Record crank/case measurements (critical fields only)",
+      "If missing parts, Block with reason “Awaiting parts/material”",
+      "Update ETA (Expected back on date)"
     ],
-    qualityGates: ["Vendor + ETA 확정됨", "Required parts list 확정됨"],
+    qualityGates: ["Vendor + ETA confirmed", "Required parts list confirmed"],
     logOnCompletion: ["Vendor name", "ETA", "Missing parts list"]
   },
   {
     station: "Carbon",
     taskTitle: "Carbon Panel Fitment Loop",
-    objective: "패널 갭/정렬을 반복하면서 최종 조립 품질 기준 만족",
-    prereqs: "chassis prep 완료, 패널 준비",
-    inputs: "panel set, alignment shims, clamps, measuring tape, gap gauge",
+    objective: "Iterate panel gaps and alignment to meet final assembly quality.",
+    prereqs: "Chassis prep complete, panels ready",
+    inputs: "panel set / alignment shims / clamps / measuring tape / gap gauge",
     steps: [
-      "패널 프리핏(임시 고정)",
-      "좌/우 갭 측정 기록(목표 범위 체크)",
-      "간섭 포인트 표시 및 수정",
-      "수정 후 재측정",
-      "mounting points 토크(임시 토크) 적용",
-      "QC 호출(중간 승인)"
+      "Pre-fit panels (temporary mounting)",
+      "Measure left/right gaps (verify target range)",
+      "Mark interference points and adjust",
+      "Re-measure after adjustment",
+      "Apply temporary torque to mounting points",
+      "Call QC for interim approval"
     ],
-    qualityGates: ["gap tolerance within spec", "no visible warp / stress point"],
+    qualityGates: [
+      "Gap tolerance within spec",
+      "No visible warp or stress points"
+    ],
     logOnCompletion: ["gap measurements", "QC pass/fail"]
   },
   {
     station: "Paint",
     taskTitle: "Paint Prep — Mexico Blue",
-    objective: "도장 품질을 위한 표면 상태/환경/재료 준비 완비",
-    prereqs: "bodywork 완료, booth available",
-    inputs: "primer, paint, booth filters, PPE, mixing sheet",
+    objective:
+      "Complete surface, environment, and material readiness for paint quality.",
+    prereqs: "Bodywork complete, booth available",
+    inputs: "primer / paint / booth filters / PPE / mixing sheet",
     steps: [
-      "표면 결함 점검(손/조명)",
-      "마스킹 라인 확인",
-      "booth 환경 체크(온도/습도)",
-      "paint mix batch 기록",
-      "test spray 확인",
-      "본 도장 진행",
-      "cure time 시작 기록"
+      "Inspect surface defects (hand/lighting)",
+      "Verify masking lines",
+      "Check booth environment (temperature/humidity)",
+      "Record paint mix batch",
+      "Verify test spray",
+      "Proceed with full paint",
+      "Record cure start time"
     ],
-    qualityGates: ["mix batch 기록됨", "booth environment OK"],
-    logOnCompletion: ["batch id", "booth conditions", "cure start time"]
+    qualityGates: ["Mix batch recorded", "Booth environment OK"],
+    logOnCompletion: ["Batch ID", "Booth conditions", "Cure start time"]
   },
   {
     station: "Electrical",
     taskTitle: "Harness Routing & ECU Check",
-    objective: "하네스 라우팅/커넥터 체결/ECU 기본 체크 완료",
-    prereqs: "interior access 확보, harness kit 준비",
-    inputs: "harness, ECU, multimeter, connector checklist",
+    objective: "Complete harness routing, connector checks, and ECU baseline.",
+    prereqs: "Interior access cleared, harness kit ready",
+    inputs: "harness / ECU / multimeter / connector checklist",
     steps: [
-      "하네스 라우팅 경로 확인",
-      "클립/고정 포인트 체결",
-      "커넥터 체결 체크(필수 리스트)",
-      "전원/그라운드 continuity 체크",
-      "ECU 초기 통신 확인"
+      "Verify harness routing path",
+      "Secure clips and mounting points",
+      "Check connectors against required list",
+      "Verify power/ground continuity",
+      "Confirm ECU initial communication"
     ],
-    qualityGates: ["connector checklist 100%", "ECU handshake OK"],
-    logOnCompletion: ["connector exceptions", "ECU status"]
+    qualityGates: ["Connector checklist 100%", "ECU handshake OK"],
+    logOnCompletion: ["Connector exceptions", "ECU status"]
   },
   {
     station: "QC",
     taskTitle: "Final QC Gate (pre-delivery)",
-    objective: "출고 전 “GW 표준” 기준 통과",
+    objective: "Pass GW standards prior to delivery.",
     steps: [
       "Panel gaps final check",
       "Paint finish check",
@@ -128,7 +136,7 @@ const templates: InstructionTemplate[] = [
       "Test drive checklist",
       "Sign-off"
     ],
-    logOnCompletion: ["QC sign-off name", "exceptions"]
+    logOnCompletion: ["QC sign-off name", "Exceptions"]
   }
 ];
 
@@ -154,17 +162,18 @@ export function getInstructionTemplate(
     matchTemplate(taskTitle, phase) ?? {
       station: phase ?? "General",
       taskTitle: taskTitle ?? "Work Instruction",
-      objective: "작업 목표를 확인하고 안전/품질 기준에 맞게 수행하세요.",
+      objective:
+        "Confirm the objective and execute to safety and quality standards.",
       steps: [
-        "작업 지시서 확인",
-        "필요 부품/툴 준비",
-        "작업 수행",
-        "중간 점검",
-        "마감 정리",
-        "완료 기록"
+        "Review work instructions",
+        "Prepare required parts/tools",
+        "Execute task",
+        "Perform mid-check",
+        "Finalize cleanup",
+        "Log completion"
       ],
-      qualityGates: ["필수 체크 항목 완료"],
-      logOnCompletion: ["사진/메모"]
+      qualityGates: ["Required checks completed"],
+      logOnCompletion: ["Photos/notes"]
     }
   );
 }

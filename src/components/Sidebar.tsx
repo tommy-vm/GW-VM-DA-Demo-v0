@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import TechnicianSelector from "@/components/TechnicianSelector";
 
 type Mode = "admin" | "technician";
 
 const adminNav = [
+  { href: "/admin/summary", label: "Summary" },
   { href: "/builds", label: "Builds" },
   { href: "/parts", label: "Parts" },
   { href: "/inventory", label: "Inventory" },
@@ -14,6 +16,7 @@ const adminNav = [
 
 const techNav = [
   { href: "/floor/station", label: "Station" },
+  { href: "/technician/summary", label: "Summary" },
   { href: "/floor", label: "Today Board" },
   { href: "/floor/log", label: "Quick Log" }
 ];
@@ -47,11 +50,11 @@ export default function Sidebar({ initialMode }: { initialMode: Mode }) {
         Gunther Werks
       </div>
       <div className="mt-2 text-lg font-semibold">Manufacturing OS</div>
-      <div className="mt-4 inline-flex rounded-full border border-slate-800 bg-slate-900 p-1 text-xs">
+      <div className="mt-4 flex w-full rounded-full border border-slate-800 bg-slate-900 p-1 text-xs">
         <button
           type="button"
           onClick={() => updateMode("admin")}
-          className={`rounded-full px-3 py-1.5 ${
+          className={`flex-1 rounded-full px-3 py-1.5 ${
             mode === "admin"
               ? "bg-brand-600 text-white"
               : "text-slate-400 hover:text-slate-200"
@@ -62,7 +65,7 @@ export default function Sidebar({ initialMode }: { initialMode: Mode }) {
         <button
           type="button"
           onClick={() => updateMode("technician")}
-          className={`rounded-full px-3 py-1.5 ${
+          className={`flex-1 rounded-full px-3 py-1.5 ${
             mode === "technician"
               ? "bg-brand-600 text-white"
               : "text-slate-400 hover:text-slate-200"
@@ -76,14 +79,15 @@ export default function Sidebar({ initialMode }: { initialMode: Mode }) {
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-lg px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-900"
+            className="sidebar-link rounded-lg px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-900"
           >
             {item.label}
           </Link>
         ))}
       </nav>
-      <div className="mt-auto rounded-lg border border-slate-800 bg-slate-900/40 p-3 text-xs text-slate-400">
-        Demo Admin Dashboard
+      {mode === "technician" ? <TechnicianSelector /> : null}
+      <div className="mt-auto text-xs text-slate-500">
+        &nbsp;
       </div>
     </aside>
   );

@@ -41,7 +41,7 @@ export default function BuildStationTabs({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-3 border-b border-slate-800 pb-3">
+      <div className="sticky top-0 z-10 flex flex-wrap gap-3 border-b border-slate-800 bg-slate-950/80 pb-3 pt-2 backdrop-blur">
         {tabs.map((tab) => (
           <button
             key={tab}

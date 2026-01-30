@@ -14,9 +14,18 @@ export type StationTask = {
   status: string | null;
   blockReason?: string | null;
   blockAt?: string | null;
+  shortageParts?: string[];
+};
+
+export type StationRequirement = {
+  phase: string | null;
+  sku: string | null;
+  name: string | null;
+  shortageQty: number;
 };
 
 const stations = [
+  { id: "all", label: "All", keywords: [] },
   { id: "carbon", label: "Carbon", keywords: ["carbon", "composite"] },
   { id: "paint", label: "Paint", keywords: ["paint", "prep", "finish"] },
   { id: "assembly", label: "Assembly", keywords: ["assembly", "trim"] },
@@ -31,6 +40,7 @@ function isBlocked(status?: string | null) {
 }
 
 function matchStation(task: StationTask, stationId: string) {
+  if (stationId === "all") return true;
   const station = stations.find((item) => item.id === stationId);
   if (!station) return false;
   const phase = task.phase?.toLowerCase() ?? "";
@@ -59,7 +69,13 @@ function statusTone(status?: string | null) {
   return "info";
 }
 
-export default function StationViewClient({ tasks }: { tasks: StationTask[] }) {
+export default function StationViewClient({
+  tasks,
+  requirements
+}: {
+  tasks: StationTask[];
+  requirements: StationRequirement[];
+}) {
   const [selectedStation, setSelectedStation] = useState(stations[0].id);
   const [items, setItems] = useState(tasks);
   const [blockTarget, setBlockTarget] = useState<StationTask | null>(null);
@@ -68,6 +84,19 @@ export default function StationViewClient({ tasks }: { tasks: StationTask[] }) {
     () => items.filter((task) => matchStation(task, selectedStation)),
     [items, selectedStation]
   );
+
+  const stationShortages = useMemo(() => {
+    const shortageList = requirements
+      .filter((req) => req.shortageQty > 0)
+      .filter((req) => matchStation({ phase: req.phase } as StationTask, selectedStation))
+      .sort((a, b) => b.shortageQty - a.shortageQty)
+      .slice(0, 3);
+    return shortageList;
+  }, [requirements, selectedStation]);
+
+  const blockedDueToParts = stationTasks.filter((task) =>
+    (task.shortageParts ?? []).length > 0
+  ).length;
 
   const nowTasks = stationTasks.filter((task) =>
     ["IN_PROGRESS", "PAUSED"].includes(task.status?.toUpperCase() ?? "")
@@ -113,22 +142,54 @@ export default function StationViewClient({ tasks }: { tasks: StationTask[] }) {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap gap-3 rounded-3xl border border-slate-800 bg-slate-900/40 p-4">
-        {stations.map((station) => (
-          <button
-            key={station.id}
-            type="button"
-            onClick={() => setSelectedStation(station.id)}
-            className={`h-14 rounded-2xl px-6 text-base font-semibold ${
-              selectedStation === station.id
-                ? "bg-brand-600 text-white"
-                : "border border-slate-800 text-slate-300"
-            }`}
-          >
-            {station.label}
-          </button>
-        ))}
+    <div className="w-full space-y-6">
+      <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-4 shadow-sm">
+        <div className="flex flex-wrap gap-3">
+          {stations.map((station) => (
+            <button
+              key={station.id}
+              type="button"
+              onClick={() => setSelectedStation(station.id)}
+              className={`h-14 rounded-2xl px-6 text-base font-semibold ${
+                selectedStation === station.id
+                  ? "bg-brand-600 text-white"
+                  : "border border-slate-800 text-slate-300"
+              }`}
+            >
+              {station.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
+            Top Shortages
+          </div>
+          <div className="text-sm text-rose-200">
+            Blocked due to parts/material: {blockedDueToParts}
+          </div>
+        </div>
+        {stationShortages.length === 0 ? (
+          <div className="mt-3 rounded-xl border border-dashed border-slate-800 bg-slate-900/40 px-4 py-2 text-sm text-slate-400">
+            Queue is empty.
+          </div>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {stationShortages.map((item) => (
+              <div
+                key={`${item.sku ?? item.name}-${item.phase}`}
+                className="flex items-center justify-between rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-base text-rose-100"
+              >
+                <div>
+                  {item.sku ?? "SKU"} · {item.name ?? "Item"}
+                </div>
+                <div className="text-sm">Short: {item.shortageQty}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <StationSection
@@ -140,7 +201,7 @@ export default function StationViewClient({ tasks }: { tasks: StationTask[] }) {
         }
         onBlock={(task) => setBlockTarget(task)}
         onResolve={(task) => applyEvent(task, "UNBLOCK")}
-        emphasized
+        accentClass="border-brand-600"
       />
       <StationSection
         title="NEXT"
@@ -150,6 +211,7 @@ export default function StationViewClient({ tasks }: { tasks: StationTask[] }) {
           applyEvent(task, isBlocked(task.status) ? "UNBLOCK" : "COMPLETE")
         }
         onBlock={(task) => setBlockTarget(task)}
+        accentClass="border-slate-400"
       />
       <StationSection
         title="BLOCKED"
@@ -160,7 +222,7 @@ export default function StationViewClient({ tasks }: { tasks: StationTask[] }) {
         }
         onBlock={(task) => setBlockTarget(task)}
         onResolve={(task) => applyEvent(task, "UNBLOCK")}
-        emphasized
+        accentClass="border-rose-500"
       />
 
       <BlockModal
@@ -191,7 +253,7 @@ function StationSection({
   title,
   description,
   tasks,
-  emphasized,
+  accentClass,
   onDone,
   onBlock,
   onResolve
@@ -199,44 +261,38 @@ function StationSection({
   title: string;
   description: string;
   tasks: StationTask[];
-  emphasized?: boolean;
+  accentClass: string;
   onDone: (task: StationTask) => void;
   onBlock: (task: StationTask) => void;
   onResolve?: (task: StationTask) => void;
 }) {
   return (
-    <div
-      className={`space-y-4 rounded-3xl ${
-        emphasized
-          ? "border border-brand-500/30 bg-brand-500/5 p-4"
-          : ""
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            {title}
+    <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 shadow-sm">
+      <div className={`border-l-4 pl-4 ${accentClass}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
+              {title}
+            </div>
+            <div className="mt-2 text-lg text-slate-300">{description}</div>
           </div>
-          <div className="mt-2 text-lg text-slate-300">{description}</div>
+          <div className="text-sm text-slate-400">{tasks.length} tasks</div>
         </div>
-        <div className="text-sm text-slate-400">{tasks.length} tasks</div>
       </div>
       {tasks.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-slate-800 bg-slate-900/30 px-6 py-6 text-base text-slate-500">
-          No tasks in this queue.
+        <div className="mt-4 rounded-xl border border-dashed border-slate-800 bg-slate-900/40 px-4 py-2 text-sm text-slate-400">
+          No tasks queued.
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="mt-4 space-y-3">
           {tasks.map((task) => {
-            const blocked = isBlocked(task.status);
+            const blocked = isBlocked(task.status) || (task.shortageParts ?? []).length > 0;
             return (
               <div
                 key={task.id}
                 className={`flex flex-wrap items-center gap-4 rounded-2xl border px-5 py-4 ${
                   blocked
                     ? "border-rose-500/50 bg-rose-500/10"
-                    : emphasized
-                    ? "border-brand-500/40 bg-slate-900/60"
                     : "border-slate-800 bg-slate-900/40"
                 }`}
               >
@@ -252,23 +308,30 @@ function StationSection({
                       BLOCKED: {task.blockReason}
                     </div>
                   ) : null}
+                  {task.shortageParts && task.shortageParts.length > 0 ? (
+                    <div className="text-base font-semibold text-rose-100">
+                      BLOCKED: awaiting parts/material —{" "}
+                      {task.shortageParts.join(", ")}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusBadge
-                    label={task.status ?? "UNKNOWN"}
-                    tone={statusTone(task.status)}
+                    label={blocked ? "BLOCKED" : task.status ?? "UNKNOWN"}
+                    tone={statusTone(blocked ? "BLOCKED" : task.status)}
                   />
                   <button
                     type="button"
                     onClick={() => onDone(task)}
-                    className="h-12 rounded-xl bg-brand-600 px-5 text-base font-semibold text-white"
+                    disabled={(task.shortageParts ?? []).length > 0}
+                    className="h-11 rounded-xl bg-brand-600 px-5 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Done
                   </button>
                   <button
                     type="button"
                     onClick={() => onBlock(task)}
-                    className="h-12 rounded-xl border border-rose-500/40 bg-rose-500/10 px-5 text-base font-semibold text-rose-100"
+                    className="h-11 rounded-xl border border-rose-500/40 bg-rose-500/10 px-5 text-base font-semibold text-rose-100"
                   >
                     Block
                   </button>

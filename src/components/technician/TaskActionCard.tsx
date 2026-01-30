@@ -13,6 +13,7 @@ export type TechnicianTask = {
   status: string | null;
   blockReason?: string | null;
   blockAt?: string | null;
+  shortageParts?: string[];
 };
 
 type NextAction = {
@@ -49,7 +50,10 @@ export default function TaskActionCard({
   const [isBlockOpen, setIsBlockOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const nextAction = useMemo(() => getNextAction(task), [task]);
-  const isBlocked = task.status?.toUpperCase() === "BLOCKED";
+  const isShortage = (task.shortageParts ?? []).length > 0;
+  const isBlocked =
+    task.status?.toUpperCase() === "BLOCKED" || isShortage;
+  const displayStatus = isBlocked ? "BLOCKED" : task.status ?? "UNKNOWN";
 
   const applyEvent = async (eventType: string, noteValue?: string | null) => {
     const previous = { ...task };
@@ -124,7 +128,7 @@ export default function TaskActionCard({
             Stage: {task.phase ?? "Unassigned"}
           </div>
         </div>
-        <StatusBadge label={task.status ?? "UNKNOWN"} tone={statusTone(task.status)} />
+        <StatusBadge label={displayStatus} tone={statusTone(displayStatus)} />
       </div>
 
       {isBlocked && task.blockReason ? (
@@ -138,11 +142,19 @@ export default function TaskActionCard({
         </div>
       ) : null}
 
+      {isShortage ? (
+        <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-base text-rose-100">
+          Blocked: awaiting parts/material —{" "}
+          {task.shortageParts?.join(", ")}
+        </div>
+      ) : null}
+
       <div className="mt-5 flex flex-col gap-3">
         <button
           type="button"
           onClick={handlePrimary}
-          className={`h-16 w-full rounded-2xl text-lg font-semibold text-white shadow-lg ${
+          disabled={isShortage && nextAction.actionType !== "UNBLOCK"}
+          className={`h-16 w-full rounded-2xl text-lg font-semibold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-60 ${
             isBlocked
               ? "bg-rose-500 shadow-rose-500/30"
               : "bg-brand-600 shadow-brand-600/30"

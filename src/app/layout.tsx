@@ -16,19 +16,22 @@ export default function RootLayout({
 }) {
   const modeCookie = cookies().get("gw_mode")?.value;
   const mode = modeCookie === "technician" ? "technician" : "admin";
+  const theme = "light";
 
   return (
-    <html lang="en">
+    <html lang="en" data-theme={theme}>
       <body
-        className={`min-h-screen bg-slate-950 text-slate-100 ${
+        className={`h-screen overflow-hidden bg-slate-950 text-slate-100 ${
           mode === "technician" ? "tech-mode" : ""
         }`}
       >
-        <div className="flex min-h-screen">
+        <div className="flex h-screen">
           <Sidebar initialMode={mode} />
-          <div className="flex min-h-screen flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <Topbar />
-            <main className="flex-1 px-6 py-8">{children}</main>
+            <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-8">
+              {children}
+            </main>
           </div>
         </div>
       </body>

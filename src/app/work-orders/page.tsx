@@ -57,9 +57,10 @@ export default async function WorkOrdersPage() {
       ) : (
         <div className="space-y-3">
           {workOrders.map((order) => (
-            <div
+            <Link
               key={order.id}
-              className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/40 p-4"
+              href={`/work-orders/${order.id}`}
+              className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/40 p-4 transition hover:border-brand-500/40"
             >
               <div>
                 <div className="font-semibold text-slate-100">
@@ -77,14 +78,9 @@ export default async function WorkOrdersPage() {
                   label={order.status ?? "UNKNOWN"}
                   tone={statusTone(order.status)}
                 />
-                <Link
-                  href={`/work-orders/${order.id}`}
-                  className="text-xs text-brand-200 hover:text-brand-100"
-                >
-                  View Detail
-                </Link>
+                <span className="text-xs text-brand-200">View Detail</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
